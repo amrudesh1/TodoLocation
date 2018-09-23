@@ -1,9 +1,11 @@
 package  amrudesh.com.locationtodoreminder;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -12,23 +14,27 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import amrudesh.com.locationtodoreminder.data.AlarmReminderContract;
 import amrudesh.com.locationtodoreminder.data.AlarmReminderDbHelper;
-
 import amrudesh.com.locationtodoreminder.data.AlarmReminderDbHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private FloatingActionButton mAddReminderButton;
+    private FloatingActionButton mMainButton,mAddReminderButton,mMapsButton;
     private Toolbar mToolbar;
     AlarmCursorAdapter mCursorAdapter;
+    Animation fabOpen,fabClose,fabRotateClock,fabRotateAnti;
     AlarmReminderDbHelper alarmReminderDbHelper = new AlarmReminderDbHelper(this);
     ListView reminderListView;
     ProgressDialog prgDialog;
+    Boolean isOpen=false;
 
     private static final int VEHICLE_LOADER = 0;
 
@@ -36,11 +42,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        fabOpen= AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fab_open);
+        fabClose=AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fab_close);
+        fabRotateClock=AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_clockwise);
+        fabRotateAnti=AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_anticlockwise);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        mToolbar.setTitle(R.string.app_name);
 
+        mToolbar.setTitle(R.string.app_name);
+        mMainButton=(FloatingActionButton)findViewById(R.id.fab);
+        mMapsButton=(FloatingActionButton)findViewById(R.id.fab_two);
+        mAddReminderButton = (FloatingActionButton) findViewById(R.id.fab_one);
 
         reminderListView = (ListView) findViewById(R.id.list);
         View emptyView = findViewById(R.id.empty_view);
@@ -64,10 +76,38 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             }
         });
+        mMainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isOpen)
+                {
+                    mMapsButton.startAnimation(fabClose);
+                    mAddReminderButton.startAnimation(fabClose);
+                    mMainButton.startAnimation(fabRotateAnti);
+                    mAddReminderButton.setClickable(false);
+                    mMapsButton.setClickable(false);
+                    isOpen=false;
+                }
+                else
+                {
+                    mMapsButton.startAnimation(fabOpen);
+                    mMapsButton.setImageResource(R.drawable.round_location_on_black_18dp);
+                    mAddReminderButton.setImageResource(R.drawable.round_calendar_today_black_18dp);
+                    mAddReminderButton.startAnimation(fabOpen);
+                    mMainButton.startAnimation(fabRotateClock);
+                    mAddReminderButton.setClickable(true);
+                    mMapsButton.setClickable(true);
+                    isOpen=true;
+                }
+            }
+        });
 
-
-        mAddReminderButton = (FloatingActionButton) findViewById(R.id.fab);
-
+        mMapsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,location_activity.class));
+            }
+        });
         mAddReminderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,5 +154,32 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         mCursorAdapter.swapCursor(null);
 
+    }
+    private void doExit() {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                MainActivity.this);
+
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+
+        alertDialog.setNegativeButton("No", null);
+
+        alertDialog.setMessage("Do you want to exit?");
+        alertDialog.setTitle("AppTitle");
+        alertDialog.show();
+    }
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            doExit();
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }
