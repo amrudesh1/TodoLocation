@@ -35,6 +35,9 @@ public class AlarmReminderContract {
         public static final String KEY_REPEAT_NO = "repeat_no";
         public static final String KEY_REPEAT_TYPE = "repeat_type";
         public static final String KEY_ACTIVE = "active";
+        public static final String KEY_LOCATION="location";
+        public static final String latitude="latitude";
+        public static final String longitude="longitude";
 
     }
 

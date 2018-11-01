@@ -17,6 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
@@ -35,44 +37,55 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
+public class     MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
-    private static final String FINE_LOCATION=Manifest.permission.ACCESS_FINE_LOCATION;
+    public static int UPDATE_INTERVAL=5000;
+    public static int FASTEST_INTERVAL =3000;
+    public static int DISPLACEMENT=10;
+    private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     public FloatingActionButton add_loc_btn;
-    private static final String COURSE_LOCATION=Manifest.permission.ACCESS_COARSE_LOCATION;
-    private static final int LOC_REQ_CODE=123;
-    public Double latitude,longitude;
+    private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final int LOC_REQ_CODE = 123;
+    public Double latitude, longitude;
     private Boolean mLocationPermissionGranted = false;
     private PlaceAutocompleteFragment placeAutocompleteFragment;
-    private GoogleMap mMap;
-    private static final LatLngBounds lat_lang_bound = new LatLngBounds(new LatLng(-40,-168),new LatLng(71,136));
+    public GoogleMap mMap;
+    private static final LatLngBounds lat_lang_bound = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136));
     private static final String TAG = "MapActivity";
     private FusedLocationProviderClient fusedLocationProviderClient;
-
-
-
-
+    FirebaseDatabase database;
+    DatabaseReference myRef;
+    GeoFire geoFire;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        database= FirebaseDatabase.getInstance();
+        Log.i("Maps","Maps Invoked");
+        myRef = database.getReference("My Location");
+        geoFire= new GeoFire(myRef);
         getLocationPermission();
-        add_loc_btn=(FloatingActionButton)findViewById(R.id.add_loc);
-        placeAutocompleteFragment =(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        add_loc_btn = (FloatingActionButton) findViewById(R.id.add_loc);
+        placeAutocompleteFragment = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                final LatLng latLng=place.getLatLng();
-                String search=place.getName().toString();
+                final LatLng latLng = place.getLatLng();
+                String search = place.getName().toString();
                 geoLocate(search);
-                }
+            }
 
             @Override
             public void onError(Status status) {
@@ -81,6 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
     }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Toast.makeText(this, "Map is Ready", Toast.LENGTH_SHORT).show();
@@ -100,97 +114,98 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                 @Override
                 public void onMapClick(LatLng latLng) {
-                    MarkerOptions markerOptions=new MarkerOptions();
+                    MarkerOptions markerOptions = new MarkerOptions();
                     markerOptions.position(latLng);
-                    markerOptions.title(latLng.latitude+":"+latLng.longitude);
+                    markerOptions.title(latLng.latitude + ":" + latLng.longitude);
                     mMap.clear();
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                     mMap.addMarker(markerOptions);
-                    latitude=latLng.latitude;
-                    longitude=latLng.longitude;
-                    Log.i("msg",latitude.toString()+longitude.toString());
+                    latitude = latLng.latitude;
+                    longitude = latLng.longitude;
+
+                    Log.i("msg", latitude.toString() + longitude.toString());
 
                 }
             });
-add_loc_btn.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-        startActivity(new Intent(MapsActivity.this,location_activity.class));
-    }
-});
+            add_loc_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent data = getIntent();
+                    data.putExtra("lat",latitude.toString());
+                    data.putExtra("lon",longitude.toString());
+                    setResult(RESULT_OK,data);
+                    finish();
+                    }
+            });
 
 
         }
     }
-    private void initMap()
-    {
-        SupportMapFragment mapFragment =(SupportMapFragment)
+
+    public void initMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment)
                 getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapsActivity.this);
-        Log.i("msg","Map is Intilised");
-
+        Log.i("msg", "Map is Intilised");
 
 
     }
 
-    private void geoLocate(String search){
+    private void geoLocate(String search) {
         Log.d(TAG, "geoLocate: geolocating");
 
         Geocoder geocoder = new Geocoder(MapsActivity.this);
-        List <Address> list = new ArrayList<>();
-        try{
+        List<Address> list = new ArrayList<>();
+        try {
             list = geocoder.getFromLocationName(search, 1);
-        }catch (IOException e){
-            Log.e(TAG, "geoLocate: IOException: " + e.getMessage() );
+        } catch (IOException e) {
+            Log.e(TAG, "geoLocate: IOException: " + e.getMessage());
         }
 
-        if(list.size() > 0){
+        if (list.size() > 0) {
             Address address = list.get(0);
-            latitude=address.getLatitude();
-            longitude=address.getLongitude();
-            Log.i("msg",latitude.toString()+":"+longitude.toString());
+            latitude = address.getLatitude();
+            longitude = address.getLongitude();
+            Log.i("msg", latitude.toString() + ":" + longitude.toString());
             Log.d(TAG, "geoLocate: found a location: " + address.toString());
-           moveCamera(new LatLng(address.getLatitude(),address.getLongitude()),15f,address.getAddressLine(0));
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), 15f, address.getAddressLine(0));
         }
     }
 
 
-
-    private void getDeviceLocation()
-    {
-        Log.d(TAG,"Getting the Current Location");
+    public void getDeviceLocation() {
+        Log.d(TAG, "Getting the Current Location");
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         try {
-        if(mLocationPermissionGranted)
-        {
-            Task location =fusedLocationProviderClient.getLastLocation();
-            location.addOnCompleteListener(new OnCompleteListener() {
-                @Override
-                public void onComplete(@NonNull Task task) {
-                  if(task.isSuccessful())
-                  {
-                      Log.d(TAG,"Found The Current Location");
-                      Location currentLocation= (Location) task.getResult();
-                      moveCamera(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),15F,"Your Location");
+            if (mLocationPermissionGranted) {
+                Task location = fusedLocationProviderClient.getLastLocation();
+                location.addOnCompleteListener(new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Found The Current Location");
+                            Location currentLocation = (Location) task.getResult();
+                            latitude = currentLocation.getLatitude();
+                            longitude = currentLocation.getLongitude();
+                            moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15F, "Your Location");
 
-                  }else
-                  {
-                      Log.d(TAG,"Unable To Get Current Location");
-                      Toast.makeText(MapsActivity.this, "Location Not Found", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.d(TAG, "Unable To Get Current Location");
+                            Toast.makeText(MapsActivity.this, "Location Not Found", Toast.LENGTH_SHORT).show();
 
-                  }
-                }
-            });
+                        }
+                    }
+                });
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
         }
-     }
-        catch (SecurityException e) {
-        e.printStackTrace();
-        } }
+    }
 
-    private void moveCamera(LatLng latLng, float zoom,String title){
-        Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
+    private void moveCamera(LatLng latLng, float zoom, String title) {
+        Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        if(!title.equals("My Location")) {
+        if (!title.equals("My Location")) {
             MarkerOptions options = new MarkerOptions()
                     .position(latLng)
                     .title(title);
@@ -199,23 +214,23 @@ add_loc_btn.setOnClickListener(new View.OnClickListener() {
 
     }
 
-    private void getLocationPermission(){
+    private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission: getting location permissions");
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mLocationPermissionGranted = true;
                 initMap();
-            }else{
+            } else {
                 ActivityCompat.requestPermissions(this,
                         permissions,
                         LOC_REQ_CODE);
             }
-        }else{
+        } else {
             ActivityCompat.requestPermissions(this,
                     permissions,
                     LOC_REQ_CODE);
@@ -227,11 +242,11 @@ add_loc_btn.setOnClickListener(new View.OnClickListener() {
         Log.d(TAG, "onRequestPermissionsResult: called.");
         mLocationPermissionGranted = false;
 
-        switch(requestCode){
-            case LOC_REQ_CODE:{
-                if(grantResults.length > 0){
-                    for(int i = 0; i < grantResults.length; i++){
-                        if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
+        switch (requestCode) {
+            case LOC_REQ_CODE: {
+                if (grantResults.length > 0) {
+                    for (int i = 0; i < grantResults.length; i++) {
+                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                             mLocationPermissionGranted = false;
                             Log.d(TAG, "onRequestPermissionsResult: permission failed");
                             return;
@@ -245,5 +260,6 @@ add_loc_btn.setOnClickListener(new View.OnClickListener() {
             }
         }
     }
+
 
 }

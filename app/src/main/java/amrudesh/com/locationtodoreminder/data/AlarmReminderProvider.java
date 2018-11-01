@@ -52,10 +52,12 @@ public class AlarmReminderProvider extends ContentProvider {
             case REMINDER:
                 cursor = database.query(AlarmReminderContract.AlarmReminderEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
+                Log.i("msg","Reminder Invoked");
                 break;
             case REMINDER_ID:
                 selection = AlarmReminderContract.AlarmReminderEntry._ID + "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+
 
                 cursor = database.query(AlarmReminderContract.AlarmReminderEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);

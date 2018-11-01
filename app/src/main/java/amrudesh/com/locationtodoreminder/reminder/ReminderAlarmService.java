@@ -62,7 +62,6 @@ public class ReminderAlarmService extends IntentService {
             mChannel.enableLights(true);
             mChannel.enableVibration(true);
             manager.createNotificationChannel(mChannel);
-            Log.i("msg","Hello");
 
         }
 
