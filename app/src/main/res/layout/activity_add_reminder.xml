@@ -65,6 +65,163 @@
                 android:layout_marginLeft="72dp"
                 android:textColor="@color/abc_secondary_text_material_dark"
                 android:layout_height="72dp"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:background="?android:attr/selectableItemBackground"
+                >
+                <ImageView
+                    android:id="@+id/maps_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="25dp"
+                    android:src="@drawable/round_location_on_black_18dp"
+                    android:layout_centerVertical="true" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/location_but"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@id/maps_icon"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/loction_text"
+                        android:textColor="@color/abc_primary_text_material_dark"
+                        android:layout_width="wrap_content"
+                        android:textSize="15dp"
+                        android:layout_height="wrap_content"
+                        android:text="Location" />
+
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/loc_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="setLocation"
+                    android:checked="true"
+                    android:textOn="On"
+                    android:textOff="Off"/>
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:clickable="true"
+                android:id="@+id/location_click"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_height="72dp">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:id="@+id/maps"
+                    android:layout_centerInParent="true"
+                    android:clickable="true"
+                    android:layout_marginLeft="100dp"
+                    android:src="@drawable/icon_maps" />
+                <TextView
+                    android:layout_below="@+id/maps"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="60dp"
+                    android:id="@+id/loc_txt"
+                    android:textAlignment="center"
+                    android:layout_marginRight="60dp"
+                    android:hint="Enter Location by clicking on the Map icon"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:clickable="true"
+                android:onClick="setDate"
+                android:id="@+id/entry"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_height="72dp">
+                <ImageView
+                    android:id="@+id/location_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="32dp"
+                    android:src="@drawable/location_geo"
+                    android:layout_centerVertical="true" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@id/location_icon"
+                    android:layout_height="wrap_content">
+                    <EditText
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:shadowColor="@color/mdtp_dark_gray"
+                        android:hint="Enter Radius"
+                        android:id="@+id/radius"
+                        />
+                </LinearLayout>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:clickable="true"
+                android:onClick="setDate"
+                android:id="@+id/point"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_height="72dp">
+                <ImageView
+                    android:id="@+id/notification"
+                    android:layout_width="30dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="32dp"
+                    android:src="@drawable/notification_icon"
+                    android:layout_centerVertical="true" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@id/notification"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/not_poi"
+                        android:textColor="@color/abc_primary_text_material_dark"
+                        android:layout_width="wrap_content"
+                        android:textSize="15dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/notification_point" />
+                </LinearLayout>
+                <RadioGroup
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_toRightOf="@+id/notification"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/enter"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Entry"
+                        android:textSize="13dp"
+                        android:checked="true"/>
+
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Exit"
+                        android:textSize="13dp"
+                        android:checked="false"/>
+                </RadioGroup>
+            </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -75,14 +232,14 @@
                 android:layout_height="72dp">
 
                 <ImageView
-                    android:id="@+id/date_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginRight="32dp"
-                    android:src="@drawable/ic_view_day_grey600_24dp"
-                    android:layout_centerVertical="true" />
+                android:id="@+id/date_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="32dp"
+                android:src="@drawable/ic_view_day_grey600_24dp"
+                android:layout_centerVertical="true" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -213,6 +370,7 @@
                 android:layout_width="match_parent"
                 android:id="@+id/RepeatNo"
                 android:clickable="true"
+                android:visibility="gone"
                 android:onClick="setRepeatNo"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_height="72dp">
@@ -257,6 +415,7 @@
                 android:layout_width="match_parent"
                 android:id="@+id/RepeatType"
                 android:clickable="true"
+                android:visibility="gone"
                 android:onClick="selectRepeatType"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_height="72dp">

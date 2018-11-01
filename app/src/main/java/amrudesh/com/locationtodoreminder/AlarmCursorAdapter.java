@@ -2,6 +2,7 @@ package amrudesh.com.locationtodoreminder;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,9 @@ public class AlarmCursorAdapter extends CursorAdapter {
         int repeatNoColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO);
         int repeatTypeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE);
         int activeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE);
+        int activeLocationIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_LOCATION);
+        int lati=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.latitude);
+        int longi=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.longitude);
 
         String title = cursor.getString(titleColumnIndex);
         String date = cursor.getString(dateColumnIndex);
@@ -56,19 +60,25 @@ public class AlarmCursorAdapter extends CursorAdapter {
         String repeatNo = cursor.getString(repeatNoColumnIndex);
         String repeatType = cursor.getString(repeatTypeColumnIndex);
         String active = cursor.getString(activeColumnIndex);
-
+        String loc = cursor.getString(activeLocationIndex);
         String dateTime = date + " " + time;
+        String lat=cursor.getString(lati);
+        String lng=cursor.getString(longi);
 
+        if (!loc.contains("false"))
+        {
+            setReminderTitle(title);
+            setReminderDateTime("Coordinates is:\n"+lat+":"+lng);
+            setActiveImage("maps");
 
-        setReminderTitle(title);
-        setReminderDateTime(dateTime);
-        setReminderRepeatInfo(repeat, repeatNo, repeatType);
-        setActiveImage(active);
-
-
-
-
-    }
+        }
+       else             {
+            setReminderTitle(title);
+            setReminderDateTime(dateTime);
+            setReminderRepeatInfo(repeat, repeatNo, repeatType);
+            setActiveImage(active);
+            }
+        }
 
     // Set reminder title view
     public void setReminderTitle(String title) {
@@ -99,6 +109,7 @@ public class AlarmCursorAdapter extends CursorAdapter {
         }else if (repeat.equals("false")) {
             mRepeatInfoText.setText("Repeat Off");
         }
+
     }
 
     // Set active image as on or off
@@ -107,6 +118,10 @@ public class AlarmCursorAdapter extends CursorAdapter {
             mActiveImage.setImageResource(R.drawable.ic_notifications_on_white_24dp);
         }else if (active.equals("false")) {
             mActiveImage.setImageResource(R.drawable.ic_notifications_off_grey600_24dp);
+            }
+            else
+        {
+            mActiveImage.setImageResource(R.drawable.icon_maps);
         }
     }
 }

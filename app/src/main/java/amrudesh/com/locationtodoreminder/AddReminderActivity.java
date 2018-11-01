@@ -16,11 +16,14 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,12 +35,12 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
+import org.w3c.dom.Text;
+
+import amrudesh.com.locationtodoreminder.location_activity;
 
 import java.util.Calendar;
 
-/**
- * Created by delaroy on 10/26/17.
- */
 
 public class AddReminderActivity extends AppCompatActivity implements
         TimePickerDialog.OnTimeSetListener,
@@ -48,21 +51,25 @@ public class AddReminderActivity extends AppCompatActivity implements
 
     private Toolbar mToolbar;
     private EditText mTitleText;
-    private TextView mDateText, mTimeText, mRepeatText, mRepeatNoText, mRepeatTypeText;
+    View v;
+    private TextView mDateText, mTimeText, mRepeatText, mRepeatNoText, mRepeatTypeText,latlng;
     private FloatingActionButton mFAB1;
     private FloatingActionButton mFAB2;
     private Calendar mCalendar;
     private int mYear, mMonth, mHour, mMinute, mDay;
     private long mRepeatTime;
-    private Switch mRepeatSwitch;
+    private Switch mRepeatSwitch,mLocationSwitch;
+    private ImageView maps;
     private String mTitle;
     private String mTime;
+    private String latitude,longitude;
     private String mDate;
     private String mRepeat;
     private String mRepeatNo;
     private String mRepeatType;
-    private String mActive;
-
+    static final int REQUEST_CODE = 1;
+    private String mActive,mLocAct;
+    private RelativeLayout repeat,repeat1,rel1,rel2,rel3,rel4,rel5,rel6;
     private Uri mCurrentReminderUri;
     private boolean mVehicleHasChanged = false;
 
@@ -74,6 +81,7 @@ public class AddReminderActivity extends AppCompatActivity implements
     private static final String KEY_REPEAT_NO = "repeat_no_key";
     private static final String KEY_REPEAT_TYPE = "repeat_type_key";
     private static final String KEY_ACTIVE = "active_key";
+    private static final String LOCATION_KEY="location";
 
 
     // Constant values in milliseconds
@@ -92,13 +100,45 @@ public class AddReminderActivity extends AppCompatActivity implements
     };
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (requestCode == REQUEST_CODE  && resultCode  == RESULT_OK)
+            {
+                latitude=data.getStringExtra("lat");
+                longitude=data.getStringExtra("lon");
+                latlng.setText(latitude +":"+longitude);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_reminder);
 
         Intent intent = getIntent();
         mCurrentReminderUri = intent.getData();
+       /* Intent i=getIntent();
+        latlng=(TextView)findViewById(R.id.loc_txt);
+        Bundle bd = intent.getBundleExtra("personBdl");
+        if (bd != null) {
+            Log.i("Maps",latitude = bd.getString("lat"));
+            Log.i("Maps",longitude = bd.getString("lng"));
 
+            if ((latitude != null) && (longitude != null)) {
+                latlng.setText(latitude + ":" + longitude);
+            } else {
+                latlng.setText("Could Not Fetch The Location");
+            }
+
+        } *//*else {
+            latlng.setText("Please pick the Location from the Map");
+        }*/
         if (mCurrentReminderUri == null) {
 
             setTitle(getString(R.string.editor_activity_title_new_reminder));
@@ -121,17 +161,34 @@ public class AddReminderActivity extends AppCompatActivity implements
         mDateText = (TextView) findViewById(R.id.set_date);
         mTimeText = (TextView) findViewById(R.id.set_time);
         mRepeatText = (TextView) findViewById(R.id.set_repeat);
+        latlng=(TextView)findViewById(R.id.loc_txt);
         mRepeatNoText = (TextView) findViewById(R.id.set_repeat_no);
+        mLocationSwitch=(Switch)findViewById(R.id.loc_switch);
         mRepeatTypeText = (TextView) findViewById(R.id.set_repeat_type);
         mRepeatSwitch = (Switch) findViewById(R.id.repeat_switch);
         mFAB1 = (FloatingActionButton) findViewById(R.id.starred1);
         mFAB2 = (FloatingActionButton) findViewById(R.id.starred2);
-
+        repeat=(RelativeLayout)findViewById(R.id.RepeatNo);
+        repeat1=(RelativeLayout)findViewById(R.id.RepeatType);
+        rel1=(RelativeLayout)findViewById(R.id.location_click);
+        rel2=(RelativeLayout)findViewById(R.id.entry);
+        rel3=(RelativeLayout)findViewById(R.id.point);
+        rel4=(RelativeLayout)findViewById(R.id.date);
+        rel5=(RelativeLayout)findViewById(R.id.time);
+        rel6=(RelativeLayout)findViewById(R.id.repeat);
+        maps=(ImageView)findViewById(R.id.maps);
+        rel1.setVisibility(View.GONE);
+        rel2.setVisibility(View.GONE);
+        rel3.setVisibility(View.GONE);
+        repeat1.setVisibility(View.GONE);
+        repeat.setVisibility(View.GONE);
         // Initialize default values
         mActive = "true";
         mRepeat = "true";
         mRepeatNo = Integer.toString(1);
         mRepeatType = "Hour";
+        mLocAct="false";
+        mLocationSwitch.setChecked(false);
 
         mCalendar = Calendar.getInstance();
         mHour = mCalendar.get(Calendar.HOUR_OF_DAY);
@@ -139,9 +196,10 @@ public class AddReminderActivity extends AppCompatActivity implements
         mYear = mCalendar.get(Calendar.YEAR);
         mMonth = mCalendar.get(Calendar.MONTH) + 1;
         mDay = mCalendar.get(Calendar.DATE);
-
+        mRepeatSwitch.setChecked(false);
         mDate = mDay + "/" + mMonth + "/" + mYear;
         mTime = mHour + ":" + mMinute;
+
 
         // Setup Reminder Title EditText
         mTitleText.addTextChangedListener(new TextWatcher() {
@@ -158,14 +216,25 @@ public class AddReminderActivity extends AppCompatActivity implements
             @Override
             public void afterTextChanged(Editable s) {}
         });
+maps.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+        startActivityForResult(new Intent(AddReminderActivity.this,MapsActivity.class),REQUEST_CODE);
+    }
+});
 
         // Setup TextViews using reminder values
         mDateText.setText(mDate);
         mTimeText.setText(mTime);
         mRepeatNoText.setText(mRepeatNo);
         mRepeatTypeText.setText(mRepeatType);
-        mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
-
+        if(mRepeatSwitch.isChecked()) {
+            mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
+        }
+        else
+        {
+            mRepeatText.setText("Off");
+        }
         // To save state on device rotation
         if (savedInstanceState != null) {
             String savedTitle = savedInstanceState.getString(KEY_TITLE);
@@ -183,7 +252,6 @@ public class AddReminderActivity extends AppCompatActivity implements
             String saveRepeat = savedInstanceState.getString(KEY_REPEAT);
             mRepeatText.setText(saveRepeat);
             mRepeat = saveRepeat;
-
             String savedRepeatNo = savedInstanceState.getString(KEY_REPEAT_NO);
             mRepeatNoText.setText(savedRepeatNo);
             mRepeatNo = savedRepeatNo;
@@ -191,8 +259,11 @@ public class AddReminderActivity extends AppCompatActivity implements
             String savedRepeatType = savedInstanceState.getString(KEY_REPEAT_TYPE);
             mRepeatTypeText.setText(savedRepeatType);
             mRepeatType = savedRepeatType;
-
             mActive = savedInstanceState.getString(KEY_ACTIVE);
+
+            Boolean locationAct=savedInstanceState.getBoolean(LOCATION_KEY);
+            mRepeatSwitch.setChecked(locationAct);
+
         }
 
         // Setup up active buttons
@@ -224,19 +295,55 @@ public class AddReminderActivity extends AppCompatActivity implements
         outState.putCharSequence(KEY_REPEAT_NO, mRepeatNoText.getText());
         outState.putCharSequence(KEY_REPEAT_TYPE, mRepeatTypeText.getText());
         outState.putCharSequence(KEY_ACTIVE, mActive);
-    }
+        outState.putCharSequence(LOCATION_KEY,mLocAct);
 
+    }
+//On Clicking Location
+    public void setLocation(View view)
+    {
+        boolean loctap = ((Switch) view).isChecked();
+
+        if(loctap) {
+            rel1.setVisibility(View.VISIBLE);
+            rel2.setVisibility(View.VISIBLE);
+            rel3.setVisibility(View.VISIBLE);
+            rel4.setVisibility(View.GONE);
+            rel5.setVisibility(View.GONE);
+            rel6.setVisibility(View.GONE);
+            mFAB1.setVisibility(View.GONE);
+            mFAB2.setVisibility(View.GONE);
+            mLocAct="true";
+            visibility("false");
+            mActive="false";
+            mRepeatSwitch.setChecked(false);
+            mRepeat="false";
+        }
+        else
+        {
+            rel1.setVisibility(View.GONE);
+            rel2.setVisibility(View.GONE);
+            rel3.setVisibility(View.GONE);
+            rel4.setVisibility(View.VISIBLE);
+            rel5.setVisibility(View.VISIBLE);
+            rel6.setVisibility(View.VISIBLE);
+            mFAB1.setVisibility(View.VISIBLE);
+            mFAB2.setVisibility(View.VISIBLE);
+            visibility("true");
+            mLocAct="false";
+        }
+    }
     // On clicking Time picker
     public void setTime(View v){
         Calendar now = Calendar.getInstance();
         TimePickerDialog tpd = TimePickerDialog.newInstance(
-                this,
-                now.get(Calendar.HOUR_OF_DAY),
-                now.get(Calendar.MINUTE),
-                false
-        );
-        tpd.setThemeDark(false);
-        tpd.show(getFragmentManager(), "Timepickerdialog");
+                    this,
+                    now.get(Calendar.HOUR_OF_DAY),
+                    now.get(Calendar.MINUTE),
+                    false
+            );
+            tpd.setThemeDark(false);
+            tpd.show(getFragmentManager(), "Timepickerdialog");
+
     }
 
     // On clicking Date picker
@@ -299,12 +406,50 @@ public class AddReminderActivity extends AppCompatActivity implements
         if (on) {
             mRepeat = "true";
             mRepeatText.setText("Every " + mRepeatNo + " " + mRepeatType + "(s)");
+            repeat.setVisibility(View.VISIBLE);
+            visibility(mRepeat);
+
         } else {
             mRepeat = "false";
+            visibility(mRepeat);
             mRepeatText.setText(R.string.repeat_off);
         }
     }
 
+    public void map_visibility(String mapSwitch)
+    {
+        if(mapSwitch.contains("true")) {
+            rel1.setVisibility(View.VISIBLE);
+            rel2.setVisibility(View.VISIBLE);
+            rel3.setVisibility(View.VISIBLE);
+            rel4.setVisibility(View.GONE);
+            rel5.setVisibility(View.GONE);
+            rel6.setVisibility(View.GONE);
+            mFAB1.setVisibility(View.GONE);
+            mFAB2.setVisibility(View.GONE);
+            mLocAct = "true";
+            mActive = "false";
+            mRepeat = "false";
+            mRepeatSwitch.setChecked(false);
+        }
+        else
+        {
+            visibility("true");
+        }
+
+    }
+    public void visibility(String rep)
+    {
+    if(rep=="true") {
+        repeat.setVisibility(View.VISIBLE);
+        repeat1.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+        repeat.setVisibility(View.GONE);
+        repeat1.setVisibility(View.GONE);
+        }
+    }
     // On clicking repeat type button
     public void selectRepeatType(View v){
         final String[] items = new String[5];
@@ -512,6 +657,7 @@ public class AddReminderActivity extends AppCompatActivity implements
     }
 
     // On clicking the save button
+
     public void saveReminder(){
 
      /*   if (mCurrentReminderUri == null ) {
@@ -522,15 +668,23 @@ public class AddReminderActivity extends AppCompatActivity implements
 */
 
         ContentValues values = new ContentValues();
+        {
 
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE, mTitle);
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_DATE, mDate);
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TIME, mTime);
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT, mRepeat);
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO, mRepeatNo);
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE, mRepeatType);
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE, mActive);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE, mTitle);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_DATE, mDate);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TIME, mTime);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT, mRepeat);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO, mRepeatNo);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE, mRepeatType);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE, mActive);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT, mRepeat);
+                values.put(AlarmReminderContract.AlarmReminderEntry.KEY_LOCATION, mLocAct);
+                values.put(AlarmReminderContract.AlarmReminderEntry.latitude, latitude);
+                values.put(AlarmReminderContract.AlarmReminderEntry.longitude, longitude);
+                Log.i("latlng",latitude+longitude);
 
+        }
+        Log.i("msg",mTime+mTitle);
 
         // Set up calender for creating the notification
         mCalendar.set(Calendar.MONTH, --mMonth);
@@ -589,8 +743,10 @@ public class AddReminderActivity extends AppCompatActivity implements
         // Create a new notification
         if (mActive.equals("true")) {
             if (mRepeat.equals("true")) {
+                Log.i("msg","invoked");
                 new AlarmScheduler().setRepeatAlarm(getApplicationContext(), selectedTimestamp, mCurrentReminderUri, mRepeatTime);
             } else if (mRepeat.equals("false")) {
+                Log.i("msg","invoked");
                 new AlarmScheduler().setAlarm(getApplicationContext(), selectedTimestamp, mCurrentReminderUri);
             }
 
@@ -626,6 +782,9 @@ public class AddReminderActivity extends AppCompatActivity implements
                 AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO,
                 AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE,
                 AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE,
+                AlarmReminderContract.AlarmReminderEntry.KEY_LOCATION,
+                AlarmReminderContract.AlarmReminderEntry.latitude,
+                AlarmReminderContract.AlarmReminderEntry.longitude
         };
 
         // This loader will execute the ContentProvider's query method on a background thread
@@ -653,6 +812,9 @@ public class AddReminderActivity extends AppCompatActivity implements
             int repeatNoColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO);
             int repeatTypeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE);
             int activeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE);
+            int activeLoc=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_LOCATION);
+            int lati=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.latitude);
+            int longi=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.longitude);
 
             // Extract out the value from the Cursor for the given column index
             String title = cursor.getString(titleColumnIndex);
@@ -662,6 +824,9 @@ public class AddReminderActivity extends AppCompatActivity implements
             String repeatNo = cursor.getString(repeatNoColumnIndex);
             String repeatType = cursor.getString(repeatTypeColumnIndex);
             String active = cursor.getString(activeColumnIndex);
+            String loc_act=cursor.getString(activeLoc);
+            String lat=cursor.getString(lati);
+            String lng=cursor.getString(longi);
 
 
 
@@ -672,14 +837,35 @@ public class AddReminderActivity extends AppCompatActivity implements
             mRepeatNoText.setText(repeatNo);
             mRepeatTypeText.setText(repeatType);
             mRepeatText.setText("Every " + repeatNo + " " + repeatType + "(s)");
+            latitude=lat;
+            longitude=lng;
+            Log.i("latlng",lat+":"+lng);
+            latlng.setText(lat+":"+lng);
             // Setup up active buttons
             // Setup repeat switch
+            if(loc_act.equals("false"))
+            {
+               mLocationSwitch.setChecked(false);
+               visibility("true");
+                map_visibility("false");
+
+            }
+            else
+            {
+                map_visibility("true");
+                visibility("false");
+                mLocationSwitch.setChecked(true);
+
+            }
             if (repeat.equals("false")) {
+                Log.i("msg","false");
                 mRepeatSwitch.setChecked(false);
                 mRepeatText.setText(R.string.repeat_off);
-
+                visibility("false");
+  
             } else if (repeat.equals("true")) {
                 mRepeatSwitch.setChecked(true);
+                visibility("true");
             }
 
         }

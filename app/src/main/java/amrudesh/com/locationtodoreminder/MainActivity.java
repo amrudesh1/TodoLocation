@@ -14,6 +14,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 // Set the URI on the data field of the intent
                 intent.setData(currentVehicleUri);
+                Log.i("msg",currentVehicleUri.toString());
 
                 startActivity(intent);
 
@@ -131,7 +133,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT,
                 AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO,
                 AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE,
-                AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE
+                AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE,
+                AlarmReminderContract.AlarmReminderEntry.KEY_LOCATION,
+                AlarmReminderContract.AlarmReminderEntry.latitude,
+                AlarmReminderContract.AlarmReminderEntry.longitude
 
         };
 
