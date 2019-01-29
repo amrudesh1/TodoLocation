@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -46,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class     MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
@@ -54,6 +55,7 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
     public static int UPDATE_INTERVAL=5000;
     public static int FASTEST_INTERVAL =3000;
     public static int DISPLACEMENT=10;
+    Location currentLocation;
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     public FloatingActionButton add_loc_btn;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -68,14 +70,13 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
     FirebaseDatabase database;
     DatabaseReference myRef;
     GeoFire geoFire;
+    String place_id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        database= FirebaseDatabase.getInstance();
         Log.i("Maps","Maps Invoked");
-        myRef = database.getReference("My Location");
-        geoFire= new GeoFire(myRef);
         getLocationPermission();
         add_loc_btn = (FloatingActionButton) findViewById(R.id.add_loc);
         placeAutocompleteFragment = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
@@ -85,11 +86,14 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
                 final LatLng latLng = place.getLatLng();
                 String search = place.getName().toString();
                 geoLocate(search);
+                place_id=place.getId();
+                Log.i("GeoLoc",place_id);
+
             }
 
             @Override
             public void onError(Status status) {
-
+                Log.e("status",status.toString());
             }
         });
 
@@ -100,6 +104,7 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
         Toast.makeText(this, "Map is Ready", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onMapReady: map is ready");
         mMap = googleMap;
+
 
         if (mLocationPermissionGranted) {
             getDeviceLocation();
@@ -123,6 +128,9 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
                     latitude = latLng.latitude;
                     longitude = latLng.longitude;
 
+                    mMap.addCircle(new CircleOptions()
+                            .center(new LatLng(latitude,longitude))
+                            .radius(50));
                     Log.i("msg", latitude.toString() + longitude.toString());
 
                 }
@@ -133,6 +141,7 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
                     Intent data = getIntent();
                     data.putExtra("lat",latitude.toString());
                     data.putExtra("lon",longitude.toString());
+                    data.putExtra("id",place_id);
                     setResult(RESULT_OK,data);
                     finish();
                     }
@@ -168,6 +177,7 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
             longitude = address.getLongitude();
             Log.i("msg", latitude.toString() + ":" + longitude.toString());
             Log.d(TAG, "geoLocate: found a location: " + address.toString());
+
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), 15f, address.getAddressLine(0));
         }
     }
@@ -178,16 +188,20 @@ public class     MapsActivity extends FragmentActivity implements OnMapReadyCall
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         try {
             if (mLocationPermissionGranted) {
-                Task location = fusedLocationProviderClient.getLastLocation();
+                final Task location = fusedLocationProviderClient.getLastLocation();
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "Found The Current Location");
-                            Location currentLocation = (Location) task.getResult();
+                            currentLocation = (Location) task.getResult();
                             latitude = currentLocation.getLatitude();
                             longitude = currentLocation.getLongitude();
+
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15F, "Your Location");
+
+
+
 
                         } else {
                             Log.d(TAG, "Unable To Get Current Location");

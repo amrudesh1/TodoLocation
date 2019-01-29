@@ -2,6 +2,7 @@ package  amrudesh.com.locationtodoreminder;
 
 import android.app.AlertDialog;
 import android.app.LoaderManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.CursorLoader;
@@ -22,6 +23,11 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingClient;
+
+
+
 import amrudesh.com.locationtodoreminder.data.AlarmReminderContract;
 import amrudesh.com.locationtodoreminder.data.AlarmReminderDbHelper;
 import amrudesh.com.locationtodoreminder.data.AlarmReminderDbHelper;
@@ -36,8 +42,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ListView reminderListView;
     ProgressDialog prgDialog;
     Boolean isOpen=false;
-
+    private enum PendingGeofenceTask {
+        ADD, REMOVE, NONE
+    }
+    private GeofencingClient mGeofencingClient;
+    private PendingIntent mGeofencePendingIntent;
     private static final int VEHICLE_LOADER = 0;
+    private PendingGeofenceTask mPendingGeofenceTask = PendingGeofenceTask.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

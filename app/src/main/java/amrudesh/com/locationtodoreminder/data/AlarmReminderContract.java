@@ -39,6 +39,7 @@ public class AlarmReminderContract {
         public static final String latitude="latitude";
         public static final String longitude="longitude";
 
+
     }
 
     public static String getColumnString(Cursor cursor, String columnName) {

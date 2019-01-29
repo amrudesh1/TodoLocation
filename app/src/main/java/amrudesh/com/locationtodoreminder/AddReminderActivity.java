@@ -29,15 +29,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import amrudesh.com.locationtodoreminder.data.AlarmReminderContract;
+import amrudesh.com.locationtodoreminder.geofence.FirebaseGeofire;
 import amrudesh.com.locationtodoreminder.reminder.AlarmScheduler;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
-
-import org.w3c.dom.Text;
-
-import amrudesh.com.locationtodoreminder.location_activity;
 
 import java.util.Calendar;
 
@@ -61,6 +58,7 @@ public class AddReminderActivity extends AppCompatActivity implements
     private Switch mRepeatSwitch,mLocationSwitch;
     private ImageView maps;
     private String mTitle;
+    private int count;
     private String mTime;
     private String latitude,longitude;
     private String mDate;
@@ -70,7 +68,7 @@ public class AddReminderActivity extends AppCompatActivity implements
     static final int REQUEST_CODE = 1;
     private String mActive,mLocAct;
     private RelativeLayout repeat,repeat1,rel1,rel2,rel3,rel4,rel5,rel6;
-    private Uri mCurrentReminderUri;
+    public Uri mCurrentReminderUri;
     private boolean mVehicleHasChanged = false;
 
     // Values for orientation change
@@ -90,6 +88,7 @@ public class AddReminderActivity extends AppCompatActivity implements
     private static final long milDay = 86400000L;
     private static final long milWeek = 604800000L;
     private static final long milMonth = 2592000000L;
+    String place_id;
 
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
@@ -107,7 +106,9 @@ public class AddReminderActivity extends AppCompatActivity implements
             {
                 latitude=data.getStringExtra("lat");
                 longitude=data.getStringExtra("lon");
+                place_id=data.getStringExtra("id");
                 latlng.setText(latitude +":"+longitude);
+
             }
         }
         catch (Exception e)
@@ -123,22 +124,7 @@ public class AddReminderActivity extends AppCompatActivity implements
 
         Intent intent = getIntent();
         mCurrentReminderUri = intent.getData();
-       /* Intent i=getIntent();
-        latlng=(TextView)findViewById(R.id.loc_txt);
-        Bundle bd = intent.getBundleExtra("personBdl");
-        if (bd != null) {
-            Log.i("Maps",latitude = bd.getString("lat"));
-            Log.i("Maps",longitude = bd.getString("lng"));
 
-            if ((latitude != null) && (longitude != null)) {
-                latlng.setText(latitude + ":" + longitude);
-            } else {
-                latlng.setText("Could Not Fetch The Location");
-            }
-
-        } *//*else {
-            latlng.setText("Please pick the Location from the Map");
-        }*/
         if (mCurrentReminderUri == null) {
 
             setTitle(getString(R.string.editor_activity_title_new_reminder));
@@ -149,8 +135,6 @@ public class AddReminderActivity extends AppCompatActivity implements
         } else {
 
             setTitle(getString(R.string.editor_activity_title_edit_reminder));
-
-
             getLoaderManager().initLoader(EXISTING_VEHICLE_LOADER, null, this);
         }
 
@@ -546,7 +530,15 @@ maps.setOnClickListener(new View.OnClickListener() {
                 }
 
                 else {
+                    if(mLocationSwitch.isChecked())
+                    {
+
+                        hashadder();
+
+                    }
                     saveReminder();
+                    count =count +1 ;
+                    Log.i("msg",String.valueOf(count));
                     finish();
                 }
                 return true;
@@ -657,7 +649,11 @@ maps.setOnClickListener(new View.OnClickListener() {
     }
 
     // On clicking the save button
+    public void hashadder()
+    {
 
+
+    }
     public void saveReminder(){
 
      /*   if (mCurrentReminderUri == null ) {
@@ -684,6 +680,7 @@ maps.setOnClickListener(new View.OnClickListener() {
                 Log.i("latlng",latitude+longitude);
 
         }
+
         Log.i("msg",mTime+mTitle);
 
         // Set up calender for creating the notification
