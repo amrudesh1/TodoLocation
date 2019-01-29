@@ -20,7 +20,7 @@ public class AlarmReminderProvider extends ContentProvider {
     private static final int REMINDER_ID = 101;
 
 
-    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    public static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
 

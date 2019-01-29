@@ -13,6 +13,8 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import amrudesh.com.locationtodoreminder.data.AlarmReminderContract;
+import amrudesh.com.locationtodoreminder.data.AlarmReminderProvider;
+import amrudesh.com.locationtodoreminder.geofence.FirebaseGeofire;
 
 /**
  * Created by delaroy on 10/27/17.
@@ -42,6 +44,7 @@ public class AlarmCursorAdapter extends CursorAdapter {
         mActiveImage = (ImageView) view.findViewById(R.id.active_image);
         mThumbnailImage = (ImageView) view.findViewById(R.id.thumbnail_image);
 
+        int columnID =cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry._ID);
         int titleColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE);
         int dateColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_DATE);
         int timeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_TIME);
@@ -53,6 +56,7 @@ public class AlarmCursorAdapter extends CursorAdapter {
         int lati=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.latitude);
         int longi=cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.longitude);
 
+        String columnNo =cursor.getString(columnID);
         String title = cursor.getString(titleColumnIndex);
         String date = cursor.getString(dateColumnIndex);
         String time = cursor.getString(timeColumnIndex);
@@ -64,6 +68,8 @@ public class AlarmCursorAdapter extends CursorAdapter {
         String dateTime = date + " " + time;
         String lat=cursor.getString(lati);
         String lng=cursor.getString(longi);
+        FirebaseGeofire firebaseGeofire = new FirebaseGeofire();
+        firebaseGeofire.geoFireImpementer(columnNo,lat,lng);
 
         if (!loc.contains("false"))
         {

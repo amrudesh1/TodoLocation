@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "178260317948",
+    "firebase_url": "https://locationtodoreminder.firebaseio.com",
+    "project_id": "locationtodoreminder",
+    "storage_bucket": "locationtodoreminder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178260317948:android:0dc44ad0e182dd58",
+        "android_client_info": {
+          "package_name": "amrudesh.com.locationtodoreminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178260317948-n837ffocjs3bktgjtne71v0kh8fclkbf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "amrudesh.com.locationtodoreminder",
+            "certificate_hash": "e3744af6b06091bc51bb42afb9271d4cbdddd777"
+          }
+        },
+        {
+          "client_id": "178260317948-7ab2r4g8ipjatc6rrv4epkvevtpg09q6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "amrudesh.com.locationtodoreminder",
+            "certificate_hash": "28f96d05476168569d752622d8bef85c469d9c0d"
+          }
+        },
+        {
+          "client_id": "178260317948-gkaq2at1jpel8rvmv5140m6a968uj5bg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoOjuW-R0kuTg56IHs-sQMNpAAO8KlNmg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178260317948-gkaq2at1jpel8rvmv5140m6a968uj5bg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
